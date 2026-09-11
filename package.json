@@ -1,0 +1,14 @@
+{
+  "name": "pocket-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve-demo.mjs",
+    "build": "node scripts/build-demo.mjs",
+    "test": "node scripts/test-demo.mjs",
+    "test:restart": "node scripts/test-offline-restart.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

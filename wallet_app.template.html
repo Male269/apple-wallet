@@ -1,0 +1,1002 @@
+<title>Wallet</title>
+<style>
+  :root {
+    /* ---- light (falls back here when no scheme / data-theme="light") ---- */
+    --wbg: #E9E9EE;
+    --label: #111114;
+    --sec: #85858B;
+    --blue: #007AFF;
+    --sheet: #FFFFFF;
+    --sheet-ground: #F2F2F7;
+    --hnr: #7C7C82;
+    --hnr-phone-fill: rgba(0,122,255,.14);
+    --hdr-ctl: rgba(118,118,128,.14);
+    --hdr-ico: #1A1A1D;
+    --hdr-divider: rgba(60,60,67,.22);
+    --grabber: #C9C9CE;
+    --danger: #FF3B30;
+    --dz-border: #C4C4CB;
+    --shadow-rest: 0 2px 10px rgba(24,24,34,.10), 0 10px 24px rgba(24,24,34,.10);
+    --shadow-lift: 0 6px 18px rgba(24,24,34,.14), 0 22px 48px rgba(24,24,34,.22);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --wbg: #000000;
+      --label: #F4F4F6;
+      --sec: #8E8E93;
+      --blue: #0A84FF;
+      --sheet: #1C1C1E;
+      --sheet-ground: #2C2C2E;
+      --hnr: #86868B;
+      --hnr-phone-fill: rgba(10,132,255,.16);
+      --hdr-ctl: rgba(118,118,128,.24);
+      --hdr-ico: #FFFFFF;
+      --hdr-divider: rgba(255,255,255,.16);
+      --grabber: #48484D;
+      --dz-border: #48484D;
+      --shadow-rest: 0 2px 10px rgba(0,0,0,.55), 0 10px 26px rgba(0,0,0,.45);
+      --shadow-lift: 0 8px 22px rgba(0,0,0,.6), 0 26px 60px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --wbg: #000000;
+    --label: #F4F4F6;
+    --sec: #8E8E93;
+    --blue: #0A84FF;
+    --sheet: #1C1C1E;
+    --sheet-ground: #2C2C2E;
+    --hnr: #86868B;
+    --hnr-phone-fill: rgba(10,132,255,.16);
+    --hdr-ctl: rgba(118,118,128,.24);
+    --hdr-ico: #FFFFFF;
+    --hdr-divider: rgba(255,255,255,.16);
+    --grabber: #48484D;
+    --dz-border: #48484D;
+    --shadow-rest: 0 2px 10px rgba(0,0,0,.55), 0 10px 26px rgba(0,0,0,.45);
+    --shadow-lift: 0 8px 22px rgba(0,0,0,.6), 0 26px 60px rgba(0,0,0,.65);
+  }
+
+  html, body {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+  }
+  body {
+    background: var(--wbg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    color: var(--label);
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #stage {
+    position: absolute;
+    inset: 0;
+    touch-action: none;
+    overflow: hidden;
+  }
+
+  /* ---------- home header ---------- */
+  header {
+    position: absolute;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 400;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+  }
+  .hdr-controls {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    pointer-events: auto;
+  }
+  .ctl {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    background: var(--hdr-ctl);
+    color: var(--hdr-ico);
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .ctl:active { filter: brightness(.86); }
+  .ctl.round {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+  }
+  #addBtn { font-size: 25px; font-weight: 400; line-height: 1; padding-bottom: 2px; }
+  .hdr-group {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    border-radius: 19px;
+    background: var(--hdr-ctl);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+  }
+  .hdr-group .ctl {
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    width: 47px; height: 38px;
+  }
+  .hdr-group .sep { width: 1px; height: 22px; background: var(--hdr-divider); }
+  .ctl svg { display: block; }
+  .ctl:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  /* ---------- presented-state controls (X / more) ---------- */
+  .pres-ctl {
+    position: absolute;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    z-index: 460;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+  }
+  #closeBtn { left: 20px; }
+  #optBtn   { right: 20px; }
+  #optBtn { font-size: 21px; font-weight: 700; line-height: 1; padding-bottom: 8px; }
+
+  /* ---------- wallet items ---------- */
+  .item {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    overflow: hidden;
+    background: var(--card-white, #f5f6f6);
+    box-shadow: var(--shadow-rest);
+    will-change: transform;
+    cursor: pointer;
+  }
+  .item.lifted { box-shadow: var(--shadow-lift); }
+  .item img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .item:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* theme-matched cutout that sits at the top of the frontmost pass */
+  .notch {
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18%;
+    aspect-ratio: 3.4;
+    background: var(--wbg);
+    border-bottom-left-radius: 50% 100%;
+    border-bottom-right-radius: 50% 100%;
+    z-index: 2;
+  }
+
+  /* ---------- Hold Near Reader ---------- */
+  #hnr {
+    position: absolute;
+    top: 0;
+    left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+  }
+  .hnr-ring {
+    width: 100px; height: 100px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 5px solid var(--blue);
+    position: relative;
+    overflow: hidden;
+  }
+  .hnr-phone {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 45px; height: 78px;
+    box-sizing: border-box;
+    border: 5px solid var(--blue);
+    border-radius: 12px;
+    background: var(--hnr-phone-fill);
+    transform: translate(-50%, calc(-50% + var(--rise, 0px)));
+    will-change: transform;
+  }
+  .hnr-phone::before {
+    content: "";
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 15px; height: 4.5px;
+    border-radius: 3px;
+    background: var(--blue);
+  }
+  .hnr-label {
+    font-size: 21px;
+    font-weight: 400;
+    letter-spacing: -.2px;
+    color: var(--hnr);
+  }
+
+  /* ---------- sheets ---------- */
+  #dim {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    z-index: 600;
+    pointer-events: none;
+  }
+  .sheet {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 0;
+    margin: 0 auto;
+    max-width: 560px;
+    background: var(--sheet);
+    border-radius: 18px 18px 0 0;
+    z-index: 620;
+    transform: translate3d(0, 105%, 0);
+    will-change: transform;
+    padding: 8px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+  .grabber {
+    width: 36px; height: 5px;
+    border-radius: 3px;
+    background: var(--grabber);
+    margin: 4px auto 14px;
+  }
+  #sheet h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+  }
+  #sheet .hint {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--sec);
+    text-align: center;
+  }
+  #dropzone {
+    height: 168px;
+    border: 2px dashed var(--dz-border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--sec);
+    font-size: 15px;
+    font-weight: 500;
+    overflow: hidden;
+    position: relative;
+    background: var(--sheet-ground);
+  }
+  #dropzone.haspreview { border-style: solid; }
+  #dropzone img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    background: var(--sheet-ground);
+  }
+  .sheet-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+  }
+  .btn-primary {
+    height: 50px;
+    border: none;
+    border-radius: 14px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary:disabled { opacity: .4; cursor: default; }
+  .btn-plain {
+    height: 44px;
+    border: none;
+    background: none;
+    color: var(--blue);
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-danger {
+    height: 54px;
+    border: none;
+    border-radius: 14px;
+    background: var(--sheet-ground);
+    color: var(--danger);
+    font-size: 19px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary:focus-visible, .btn-plain:focus-visible, .btn-danger:focus-visible, #dropzone:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  #toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,36,.92);
+    color: #fff;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    z-index: 900;
+    opacity: 0;
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+    max-width: 84vw;
+    text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div id="stage">
+  <header>
+    <h1>Wallet</h1>
+    <div class="hdr-controls">
+      <button id="addBtn" class="ctl round" aria-label="Add a pass">+</button>
+      <div class="hdr-group">
+        <button id="searchBtn" class="ctl" aria-label="Search">
+          <svg width="19" height="19" viewBox="0 0 19 19" fill="none">
+            <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="2"/>
+            <line x1="12.6" y1="12.6" x2="17" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="sep"></span>
+        <button id="moreHomeBtn" class="ctl" aria-label="More">
+          <svg width="21" height="6" viewBox="0 0 21 6" fill="currentColor">
+            <circle cx="3" cy="3" r="2.4"/><circle cx="10.5" cy="3" r="2.4"/><circle cx="18" cy="3" r="2.4"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <button id="closeBtn" class="ctl round pres-ctl" aria-label="Done">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <line x1="2" y1="2" x2="13" y2="13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="13" y1="2" x2="2" y2="13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button id="optBtn" class="ctl round pres-ctl" aria-label="Pass options">&hellip;</button>
+
+  <div id="hnr" aria-hidden="true">
+    <div class="hnr-ring"><div class="hnr-phone" id="hnrPhone"></div></div>
+    <div class="hnr-label">Hold Near Reader</div>
+  </div>
+</div>
+
+<div id="dim"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-label="Add to Wallet">
+  <div class="grabber"></div>
+  <h2>Add to Wallet</h2>
+  <p class="hint">Pick an image of a pass or ticket.<br>A screenshot cropped to just the pass works best.</p>
+  <div id="dropzone" tabindex="0" role="button" aria-label="Choose an image">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <rect x="2" y="2" width="30" height="30" rx="8" stroke="currentColor" stroke-width="2.4"/>
+      <line x1="17" y1="10" x2="17" y2="24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="10" y1="17" x2="24" y2="17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    <span id="dzLabel">Choose an image</span>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" hidden>
+  <div class="sheet-actions">
+    <button class="btn-primary" id="confirmAdd" disabled>Add to Wallet</button>
+    <button class="btn-plain" id="cancelAdd">Cancel</button>
+  </div>
+</div>
+
+<div class="sheet" id="askRemove" role="dialog" aria-label="Remove pass">
+  <div class="grabber"></div>
+  <div class="sheet-actions" style="margin-top:6px">
+    <button class="btn-danger" id="confirmRemove">Remove Pass</button>
+    <button class="btn-plain" id="cancelRemove" style="font-weight:600">Cancel</button>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var APPLECASH_IMG = "__APPLECASH_IMG__";
+  var PASS_IMG = "__PASS_IMG__";
+  var CASH_RATIO = 700 / 1058;        // Apple Cash crop
+  var PASS_RATIO = 1140 / 1078;       // Unconquered Pass crop
+  var LS_KEY = "wallettwin.passes.v1";
+  var RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var stage = document.getElementById("stage");
+  var headerEl = document.querySelector("header");
+  var hdrControls = document.querySelector(".hdr-controls");
+  var hnr = document.getElementById("hnr");
+  var hnrPhone = document.getElementById("hnrPhone");
+  var closeBtn = document.getElementById("closeBtn");
+  var optBtn = document.getElementById("optBtn");
+  var dim = document.getElementById("dim");
+  var sheet = document.getElementById("sheet");
+  var askRemove = document.getElementById("askRemove");
+  var toastEl = document.getElementById("toast");
+
+  /* ---------- geometry ---------- */
+  var VW = 0, VH = 0, CW = 0, safeTop = 0;
+  var listTop = 0, presentedY = 0, contentH = 0, maxScroll = 0;
+  var GAP = 26;
+
+  var probe = document.createElement("div");
+  probe.style.cssText = "position:absolute;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);pointer-events:none;";
+  document.body.appendChild(probe);
+
+  /* ---------- springs ---------- */
+  function Spring(k, c) { this.k = k; this.c = c; this.x = 0; this.v = 0; this.t = 0; this.active = false; }
+  Spring.prototype.to = function (t, v) {
+    this.t = t;
+    if (v !== undefined) this.v = v;
+    this.active = true;
+    kick();
+  };
+  Spring.prototype.snap = function (x) { this.x = x; this.t = x; this.v = 0; this.active = false; };
+  Spring.prototype.step = function (dt, eps, veps) {
+    var n = Math.max(1, Math.ceil(dt / 0.008)), h = dt / n;
+    for (var i = 0; i < n; i++) {
+      var a = -this.k * (this.x - this.t) - this.c * this.v;
+      this.v += a * h;
+      this.x += this.v * h;
+    }
+    if (Math.abs(this.x - this.t) < eps && Math.abs(this.v) < veps) {
+      this.x = this.t; this.v = 0; this.active = false;
+    }
+  };
+
+  var P  = new Spring(RM ? 1400 : 340, RM ? 80 : 30);   // present progress 0..1
+  var EY = new Spring(300, 22);                          // rubber overscroll on presented pass (px)
+  var HR = new Spring(RM ? 1400 : 205, RM ? 80 : 27);   // Hold-Near-Reader reveal 0..1
+  var PS = new Spring(RM ? 1400 : 380, RM ? 80 : 34);   // add-sheet progress 0..1
+  var RS = new Spring(RM ? 1400 : 380, RM ? 80 : 34);   // remove-sheet progress 0..1
+  var SB = new Spring(210, 28);                          // scroll bound bounce (px)
+
+  /* ---------- state ---------- */
+  var items = [];
+  var presented = null;
+  var curD = 300;
+  var scrollY = 0;
+  var scrollV = 0;
+  var bouncing = false;
+  var sheetOpen = false, removeOpen = false;
+  var pendingImg = null;
+  var removing = null;
+
+  /* ---------- wallet items ---------- */
+  function makePass(id, src, ratio, userAdded, label, withNotch) {
+    var el = document.createElement("div");
+    el.className = "item";
+    el.setAttribute("role", "button");
+    el.setAttribute("tabindex", "0");
+    el.setAttribute("aria-label", label);
+    var img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    img.draggable = false;
+    el.appendChild(img);
+    if (withNotch) {
+      var n = document.createElement("div");
+      n.className = "notch";
+      el.appendChild(n);
+    }
+    stage.appendChild(el);
+    return { id: id, kind: "pass", el: el, src: src, ratio: ratio, h: 0, homeY: 0, userAdded: userAdded, notch: !!withNotch };
+  }
+
+  function loadUserPasses() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch (e) { return []; }
+  }
+  function saveUserPasses() {
+    var data = items.filter(function (it) { return it.userAdded; })
+      .map(function (it) { return { id: it.id, img: it.src, ratio: it.ratio }; });
+    try { localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+    catch (e) { toast("Storage is full — this pass will last only for this session"); }
+  }
+
+  function buildItems() {
+    items.push(makePass("applecash", APPLECASH_IMG, CASH_RATIO, false, "Apple Cash", false));
+    items.push(makePass("fsu", PASS_IMG, PASS_RATIO, false, "2026-27 Unconquered Pass", true));
+    loadUserPasses().forEach(function (p) {
+      items.push(makePass(p.id, p.img, p.ratio, true, "Saved pass", true));
+    });
+  }
+
+  /* ---------- layout ---------- */
+  function measure() {
+    VW = window.innerWidth;
+    VH = window.innerHeight;
+    CW = Math.min(VW * 0.92, 420);
+    safeTop = probe.offsetHeight || 0;
+    presentedY = safeTop + 88;
+    listTop = safeTop + 62;
+    items.forEach(function (it) {
+      it.h = Math.round(CW * it.ratio);
+      it.el.style.width = CW + "px";
+      it.el.style.height = it.h + "px";
+      it.el.style.borderRadius = Math.round(CW * 0.036) + "px";
+    });
+    computeHome();
+  }
+
+  function computeHome() {
+    var live = items.filter(function (it) { return it !== removing; });
+    var y = listTop;
+    live.forEach(function (it) {
+      it.homeY = y;
+      y += it.h + GAP;
+    });
+    contentH = y - GAP + 24;
+    maxScroll = Math.max(0, contentH - VH + 10);
+  }
+
+  function stackSlot(depth) {
+    var d = Math.min(depth, 5);
+    return { y: VH - 108 - d * 13, s: 1 - d * 0.045 };
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function rubber(x, d) { return (1 - 1 / (x / d + 1)) * d * 0.5; }
+
+  /* ---------- render ---------- */
+  function effScroll() {
+    return bouncing || SB.active ? SB.x : scrollY;
+  }
+
+  function render() {
+    var p = clamp(P.x, 0, 1.15);
+    var sy = effScroll();
+    var live = items.filter(function (it) { return it !== removing; });
+    var others = live.filter(function (it) { return it !== presented; });
+
+    // home header fades / lifts away as a pass is presented
+    var hp = clamp(1 - p * 1.8, 0, 1);
+    headerEl.style.opacity = hp;
+    headerEl.style.transform = "translate3d(0," + (-26 * p) + "px,0)";
+    hdrControls.style.pointerEvents = (p < 0.05 && !sheetOpen) ? "auto" : "none";
+
+    // presented-state controls fade in
+    var presA = clamp((p - 0.5) / 0.5, 0, 1);
+    var ctlLive = presented && !removing;
+    closeBtn.style.opacity = ctlLive ? presA : 0;
+    optBtn.style.opacity = ctlLive ? presA : 0;
+    var ctlHot = ctlLive && p > 0.9 && !sheetOpen && !removeOpen;
+    closeBtn.style.pointerEvents = ctlHot ? "auto" : "none";
+    optBtn.style.pointerEvents = ctlHot ? "auto" : "none";
+
+    // other cards recede and fade away, leaving a clean presented view
+    var fade = presented ? clamp((p - 0.42) / 0.4, 0, 1) : 0;
+    for (var i = 0; i < live.length; i++) {
+      var it = live[i];
+      var homeY = it.homeY - sy;
+      var y, s, z;
+      if (it === presented) {
+        y = lerp(homeY, presentedY, p) + EY.x;
+        s = 1;
+        z = 500;
+        it.el.style.opacity = 1;
+      } else {
+        var idxAmong = others.indexOf(it);
+        var depth = others.length - 1 - idxAmong;
+        var slot = stackSlot(depth);
+        y = lerp(homeY, slot.y, p);
+        s = lerp(1, slot.s, p);
+        z = 10 + i;
+        it.el.style.opacity = 1 - fade;
+      }
+      it.el.style.zIndex = z;
+      it.el.style.transform = "translate3d(-50%," + y + "px,0) scale(" + s + ")";
+      it.el.style.transformOrigin = "50% 0";
+    }
+
+    if (removing) {
+      var rp = clamp(1 - P.x, 0, 1);
+      removing.el.style.opacity = 1 - rp;
+      removing.el.style.transform = "translate3d(-50%," + (presentedY + EY.x) + "px,0) scale(" + (1 - rp * 0.08) + ")";
+      removing.el.style.zIndex = 490;
+    }
+
+    // Hold Near Reader: fades in place; phone rises from the bottom of the ring
+    if (presented && !removing && presented.notch) {
+      var passBottom = presentedY + presented.h + EY.x;
+      var gap = clamp((VH - passBottom) * 0.22, 34, 132);
+      var top = passBottom + gap;
+      var r = clamp(HR.x, 0, 1);
+      hnr.style.opacity = r;
+      hnr.style.transform = "translate3d(0," + top + "px,0)";
+      hnrPhone.style.setProperty("--rise", ((1 - r) * 50).toFixed(1) + "px");
+    } else {
+      hnr.style.opacity = 0;
+    }
+
+    // sheets
+    var anySheet = Math.max(PS.x, RS.x);
+    dim.style.opacity = 0.38 * anySheet;
+    dim.style.pointerEvents = anySheet > 0.4 ? "auto" : "none";
+    sheet.style.transform = "translate3d(0," + ((1 - PS.x) * 105) + "%,0)";
+    askRemove.style.transform = "translate3d(0," + ((1 - RS.x) * 105) + "%,0)";
+  }
+
+  /* ---------- animation loop ---------- */
+  var raf = null, lastT = 0;
+  function kick() {
+    if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(tick); }
+  }
+  function tick(t) {
+    raf = null;
+    var dt = clamp((t - lastT) / 1000, 0.001, 0.033);
+    lastT = t;
+    var active = false;
+
+    if (P.active) { P.step(dt, 0.001, 0.02); active = active || P.active; }
+    if (EY.active) { EY.step(dt, 0.4, 6); active = active || EY.active; }
+
+    // HNR reveal follows presentation: reaches 1 once the pass is fully up
+    var hrTarget = (presented && !removing && presented.notch && P.x > 0.985) ? 1 : 0;
+    if (HR.t !== hrTarget) HR.to(hrTarget);
+    if (HR.active) { HR.step(dt, 0.001, 0.02); active = active || HR.active; }
+
+    if (PS.active) { PS.step(dt, 0.002, 0.04); active = active || PS.active; }
+    if (RS.active) { RS.step(dt, 0.002, 0.04); active = active || RS.active; }
+
+    if (!dragging && !presented && !sheetOpen) {
+      if (bouncing || SB.active) {
+        SB.step(dt, 0.4, 8);
+        scrollY = SB.x;
+        if (!SB.active) bouncing = false;
+        active = active || SB.active;
+      } else if (Math.abs(scrollV) > 6) {
+        scrollY += scrollV * dt;
+        scrollV *= Math.pow(0.998, dt * 1000);
+        if (scrollY < 0 || scrollY > maxScroll) {
+          var bound = scrollY < 0 ? 0 : maxScroll;
+          SB.snap(scrollY);
+          SB.v = scrollV;
+          SB.to(bound);
+          bouncing = true;
+          scrollV = 0;
+        }
+        active = true;
+      }
+    }
+
+    render();
+
+    if (active) { raf = requestAnimationFrame(tick); }
+    else settle();
+  }
+
+  function settle() {
+    if (P.x === 0 && presented) {
+      presented.el.classList.remove("lifted");
+      presented = null;
+      if (removing) {
+        removing.el.remove();
+        items.splice(items.indexOf(removing), 1);
+        removing = null;
+        saveUserPasses();
+        computeHome();
+        scrollY = clamp(scrollY, 0, maxScroll);
+      }
+      render();
+    }
+  }
+
+  /* ---------- presentation ---------- */
+  function present(it, v) {
+    if (sheetOpen || removeOpen) return;
+    presented = it;
+    it.el.classList.add("lifted");
+    HR.snap(0);
+    curD = Math.max(140, (it.homeY - scrollY) - presentedY);
+    P.to(1, v || 0);
+  }
+  function dismiss(v) {
+    if (!presented) return;
+    P.to(0, v || 0);
+    if (EY.x !== 0) EY.to(0);
+  }
+
+  /* ---------- gestures ---------- */
+  var dragging = false;
+  var gesture = null;
+  var startX = 0, startY = 0, startT = 0, startScroll = 0, basePGrab = 1, movedFar = false;
+  var samples = [];
+
+  function trackV(y, t) {
+    samples.push({ y: y, t: t });
+    while (samples.length > 2 && t - samples[0].t > 90) samples.shift();
+  }
+  function sampleV() {
+    if (samples.length < 2) return 0;
+    var a = samples[0], b = samples[samples.length - 1];
+    var dt = (b.t - a.t) / 1000;
+    return dt > 0.004 ? (b.y - a.y) / dt : 0;
+  }
+
+  stage.addEventListener("pointerdown", function (e) {
+    if (sheetOpen || removeOpen || removing) return;
+    if (e.target.closest && e.target.closest("button")) return; // header / control buttons handle themselves
+    dragging = true;
+    movedFar = false;
+    startX = e.clientX; startY = e.clientY; startT = e.timeStamp;
+    samples = [];
+    trackV(e.clientY, e.timeStamp);
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+
+    if (presented || P.active) {
+      basePGrab = clamp(P.x, 0, 1);
+      P.active = false; P.v = 0;
+      gesture = (e.clientY > VH - 175 && basePGrab > 0.9) ? "stack" : "pass";
+      if (!presented) gesture = null;
+    } else {
+      gesture = "scroll";
+      startScroll = scrollY;
+      scrollV = 0;
+      if (bouncing || SB.active) { scrollY = SB.x; startScroll = scrollY; SB.active = false; bouncing = false; }
+    }
+  });
+
+  stage.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var dy = e.clientY - startY;
+    trackV(e.clientY, e.timeStamp);
+    if (Math.abs(dy) > 6 || Math.abs(e.clientX - startX) > 6) movedFar = true;
+
+    if (gesture === "scroll") {
+      var target = startScroll - dy;
+      if (target < 0) target = -rubber(-target, VH);
+      else if (target > maxScroll) target = maxScroll + rubber(target - maxScroll, VH);
+      scrollY = target;
+      render();
+    } else if (gesture === "pass") {
+      var want = basePGrab - dy / curD;
+      if (want > 1) {
+        P.x = 1;
+        EY.snap(-rubber((want - 1) * curD, 260));
+      } else {
+        EY.snap(0);
+        P.x = clamp(want, 0, 1);
+      }
+      render();
+    } else if (gesture === "stack") {
+      P.x = clamp(1 + dy / (VH * 0.55), 0, 1);
+      render();
+    }
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    var dt = e.timeStamp - startT;
+    var vy = sampleV();
+
+    if (gesture === "scroll") {
+      if (!movedFar && dt < 450) {
+        var it = itemAtPoint(e.clientX, e.clientY);
+        if (it) { present(it); return; }
+      }
+      if (scrollY < 0 || scrollY > maxScroll) {
+        var bound = scrollY < 0 ? 0 : maxScroll;
+        SB.snap(scrollY); SB.v = -vy; SB.to(bound); bouncing = true;
+      } else {
+        scrollV = -vy;
+        kick();
+      }
+    } else if (gesture === "pass") {
+      if (EY.x !== 0) { EY.to(0, -vy * 0.6); P.to(1); return; }
+      var vp = -vy / curD;
+      if (P.x < 0.5 || vy > 650) dismiss(vp);
+      else P.to(1, vp);
+    } else if (gesture === "stack") {
+      if (!movedFar && dt < 450) { dismiss(); return; }
+      var vp2 = vy / (VH * 0.55);
+      if (P.x < 0.75 || vy < -450) P.to(0, vp2);
+      else P.to(1, vp2);
+    }
+    gesture = null;
+  }
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", function (e) {
+    if (!dragging) return;
+    dragging = false;
+    if (gesture === "pass") P.to(P.x > 0.5 ? 1 : 0);
+    if (gesture === "stack") P.to(1);
+    if (EY.x !== 0) EY.to(0);
+    gesture = null;
+  });
+
+  function itemAtPoint(x, y) {
+    if (Math.abs(x - VW / 2) > CW / 2) return null;
+    var live = items.filter(function (it) { return it !== removing; });
+    for (var i = live.length - 1; i >= 0; i--) {
+      var top = live[i].homeY - scrollY;
+      if (y >= top && y <= top + live[i].h) return live[i];
+    }
+    return null;
+  }
+
+  document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+  window.addEventListener("wheel", function (e) {
+    if (!presented && !sheetOpen && !removeOpen) {
+      scrollY = clamp(scrollY + e.deltaY, 0, maxScroll);
+      scrollV = 0;
+      kick();
+    }
+  }, { passive: true });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (removeOpen) closeRemove();
+      else if (sheetOpen) closeSheet();
+      else if (presented) dismiss();
+    }
+    if ((e.key === "Enter" || e.key === " ") && document.activeElement && document.activeElement.classList.contains("item")) {
+      var it = items.filter(function (x) { return x.el === document.activeElement; })[0];
+      if (it && !presented) { e.preventDefault(); present(it); }
+    }
+  });
+
+  closeBtn.addEventListener("click", function () { if (presented) dismiss(); });
+  optBtn.addEventListener("click", function () { if (presented) openRemove(); });
+
+  /* ---------- add sheet ---------- */
+  var addBtn = document.getElementById("addBtn");
+  var dropzone = document.getElementById("dropzone");
+  var dzLabel = document.getElementById("dzLabel");
+  var fileInput = document.getElementById("fileInput");
+  var confirmAdd = document.getElementById("confirmAdd");
+
+  function openSheet() {
+    sheetOpen = true;
+    pendingImg = null;
+    confirmAdd.disabled = true;
+    dropzone.classList.remove("haspreview");
+    dropzone.querySelectorAll("img").forEach(function (n) { n.remove(); });
+    dzLabel.textContent = "Choose an image";
+    PS.to(1);
+  }
+  function closeSheet() {
+    sheetOpen = false;
+    PS.to(0);
+  }
+  addBtn.addEventListener("click", openSheet);
+  document.getElementById("cancelAdd").addEventListener("click", closeSheet);
+  dim.addEventListener("pointerdown", function () {
+    if (removeOpen) closeRemove();
+    else if (sheetOpen) closeSheet();
+  });
+
+  dropzone.addEventListener("click", function () { fileInput.click(); });
+  dropzone.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }
+  });
+
+  fileInput.addEventListener("change", function () {
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var maxW = 1000;
+        var w = Math.min(img.naturalWidth, maxW);
+        var h = Math.round(img.naturalHeight * (w / img.naturalWidth));
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        var cx = cv.getContext("2d");
+        cx.fillStyle = "#fff";
+        cx.fillRect(0, 0, w, h);
+        cx.drawImage(img, 0, 0, w, h);
+        var src = cv.toDataURL("image/jpeg", 0.86);
+        var ratio = clamp(h / w, 0.55, 1.7);
+        pendingImg = { src: src, ratio: ratio };
+        confirmAdd.disabled = false;
+        dropzone.classList.add("haspreview");
+        dropzone.querySelectorAll("img").forEach(function (n) { n.remove(); });
+        var pv = document.createElement("img");
+        pv.src = src;
+        pv.alt = "Selected pass preview";
+        dropzone.appendChild(pv);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+    fileInput.value = "";
+  });
+
+  confirmAdd.addEventListener("click", function () {
+    if (!pendingImg) return;
+    var it = makePass("p" + Date.now(), pendingImg.src, pendingImg.ratio, true, "Saved pass", true);
+    items.push(it);
+    measure();
+    saveUserPasses();
+    closeSheet();
+    scrollY = clamp(scrollY, 0, maxScroll);
+    setTimeout(function () { present(it); }, RM ? 0 : 340);
+  });
+
+  /* ---------- remove flow ---------- */
+  function openRemove() { removeOpen = true; RS.to(1); }
+  function closeRemove() { removeOpen = false; RS.to(0); }
+  document.getElementById("cancelRemove").addEventListener("click", closeRemove);
+  document.getElementById("confirmRemove").addEventListener("click", function () {
+    if (!presented) { closeRemove(); return; }
+    removing = presented;
+    closeRemove();
+    computeHome();
+    P.to(0);
+  });
+
+  /* ---------- toast ---------- */
+  var toastT = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------- boot ---------- */
+  buildItems();
+  measure();
+  window.addEventListener("resize", function () {
+    measure();
+    scrollY = clamp(scrollY, 0, maxScroll);
+    render();
+  });
+  render();
+})();
+</script>

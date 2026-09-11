@@ -1,0 +1,29 @@
+# --- AI workspace backup: standard excludes (reinstallable/junk/secrets) ---
+node_modules/
+.next/
+.nuxt/
+.turbo/
+.cache/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini
+.env
+.env.local
+
+# --- personal phone screenshots (references only; not part of the site) ---
+real_wallet.png
+mobile_fake.png
+reader.png
+reader_fade.png
+wallet.png
+
+# New personal reference shortcuts and generated local artifacts
+*.png.url
+IMG_*.png
+demo-dist/
+test-results/
+pocket-demo.zip

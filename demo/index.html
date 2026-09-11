@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14131a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pocket Demo">
+  <meta name="description" content="A tactile, offline image collection. Clearly labeled demonstration cards.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Pocket Demo</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./app.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div><p class="eyebrow">A LITTLE COLLECTION</p><h1>Pocket <span class="badge">DEMO</span></h1></div>
+      <button id="add" class="round primary" aria-label="Import images">+</button>
+    </header>
+    <div class="intro"><p>Your images. A little more tactile.</p><button id="help" class="text-button">How it works <span aria-hidden="true">↗</span></button></div>
+    <div class="collection-heading"><span id="count">YOUR COLLECTION</span><button id="theme" class="text-button" aria-label="Change color theme">Theme: Auto</button></div>
+    <main id="collection" aria-label="Image cards"></main>
+    <footer><span class="status-dot" id="status-dot"></span><span id="offline-status" role="status">Preparing offline copy…</span></footer>
+  </div>
+  <input id="files" type="file" accept="image/*" multiple hidden>
+  <div id="notice" role="status" aria-live="polite" hidden></div>
+  <dialog id="viewer" aria-label="Demo image viewer">
+    <div class="viewer-top"><button id="close-viewer" class="round" aria-label="Close image">×</button><span class="badge">POCKET DEMO</span><button id="details" class="round" aria-label="Image options">···</button></div>
+    <div id="viewer-scroll"><div id="focused-card"></div><p class="gesture-hint">Swipe sideways to browse · Pull down to close</p><div class="browse"><button id="previous" class="round" aria-label="Previous image">←</button><span id="position" aria-live="polite"></span><button id="next" class="round" aria-label="Next image">→</button></div></div>
+    <div class="demo-footer">DEMO · NOT VALID FOR ENTRY</div>
+  </dialog>
+  <dialog id="options" class="sheet" aria-labelledby="options-title">
+    <div class="sheet-head"><h2 id="options-title">Image options</h2><button class="round" data-close="options" aria-label="Close options">×</button></div>
+    <label for="image-title">Name</label><input id="image-title" maxlength="64" autocomplete="off">
+    <button id="save-title" class="action">Save name</button>
+    <button id="fit" class="action secondary">Image fit: Contain</button>
+    <button id="remove" class="action danger">Remove from this device</button>
+    <p class="small">You can undo a removal for 10 seconds.</p>
+  </dialog>
+  <dialog id="help-dialog" class="sheet" aria-labelledby="help-title">
+    <div class="sheet-head"><h2 id="help-title">Keep it in your pocket.</h2><button class="round" data-close="help-dialog" aria-label="Close help">×</button></div>
+    <p>Tap + to choose images. Tap a card to open it, swipe left or right to browse, and pull down to close. Cards spring back when you let go of a short drag.</p>
+    <p>On iPhone, open the hosted page in Safari, choose Share → Add to Home Screen, and enable Open as Web App if shown. Open the new icon while online and wait for <strong>Ready offline</strong>. Import your images there, then test in Airplane Mode.</p>
+    <p>Images stay in this browser on this device. Nothing you import is uploaded. Keep your original images: clearing website data, removing the app, or storage eviction can remove this copy.</p>
+    <p class="small">Pocket is a labeled interaction demo. Every card is marked “DEMO · NOT VALID FOR ENTRY.”</p>
+  </dialog>
+  <noscript>This demo needs JavaScript to import images and work offline.</noscript>
+</body>
+</html>
